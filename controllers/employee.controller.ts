@@ -13,6 +13,8 @@ import { CreateDepartmentDto } from "../dto/department.dto";
 import { authorizationMiddleware } from "../middlewares/authorization.middleware";
 import { logger } from "../app";
 
+console.log("hie")
+
 export class EmployeeController{
     constructor(private employeeService:EmployeeService,router:Router){
         router.post("/",this.createEmployee.bind(this));
