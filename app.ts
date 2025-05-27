@@ -8,6 +8,9 @@ import authRouter from "./routes/auth.route";
 import authMiddleware from "./middlewares/authMiddleware";
 import { LoggerService } from "./services/logger.service";
 import departmentRouter from "./routes/department.route";
+import { authorizationMiddleware } from "./middlewares/authorization.middleware";
+import { EmployeeRole } from "./entities/employee.entity";
+//authMiddleware
 //import DepartmentRou
 //const {Client}=require('pg');
 const server = express();
@@ -15,8 +18,8 @@ export const logger=LoggerService.getInstance('app()');
 server.use(express.json());
 server.use(loggerMiddleware);
 server.use(processTimeMiddleware);
-server.use("/employees", employeeRouter);
-server.use("/department",departmentRouter);
+server.use("/employees",authMiddleware,employeeRouter);
+server.use("/department",authMiddleware,departmentRouter);
 server.use("/auth",authRouter)
 
 server.use(errorMiddleware)

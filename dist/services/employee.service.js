@@ -15,49 +15,50 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.EmployeeService = void 0;
 const employee_entity_1 = __importDefault(require("../entities/employee.entity"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
-const app_1 = require("../app");
+const logger_service_1 = require("./logger.service");
 class EmployeeService {
     constructor(employeeRepository, departmentService) {
         this.employeeRepository = employeeRepository;
         this.departmentService = departmentService;
+        this.logger = logger_service_1.LoggerService.getInstance(EmployeeService.name);
     }
-    createEmployee(email, name, age, address, password, role, departmentID, status, employeeID, dateOfJoining, experience) {
+    createEmployee(createEmployeeDto) {
         return __awaiter(this, void 0, void 0, function* () {
             const newEmployee = new employee_entity_1.default();
-            newEmployee.name = name;
-            newEmployee.email = email;
-            newEmployee.age = age;
-            newEmployee.address = address;
-            newEmployee.password = yield bcrypt_1.default.hash(password, 10);
-            newEmployee.role = role;
-            newEmployee.dateOfJoining = new Date(dateOfJoining);
-            newEmployee.employeeID = employeeID;
-            newEmployee.status = status;
-            newEmployee.experience = experience;
-            const isPresent = yield this.departmentService.getDepartmentById(departmentID);
+            newEmployee.name = createEmployeeDto.name;
+            newEmployee.email = createEmployeeDto.email;
+            newEmployee.age = createEmployeeDto.age;
+            newEmployee.address = createEmployeeDto.address;
+            newEmployee.password = yield bcrypt_1.default.hash(createEmployeeDto.password, 10);
+            newEmployee.role = createEmployeeDto.role;
+            newEmployee.dateOfJoining = new Date(createEmployeeDto.dateOfJoining);
+            newEmployee.employeeID = createEmployeeDto.employeeID;
+            newEmployee.status = createEmployeeDto.status;
+            newEmployee.experience = createEmployeeDto.experience;
+            const isPresent = yield this.departmentService.getDepartmentById(createEmployeeDto.departmentId);
             if (!isPresent) {
                 throw new Error('department not found');
             }
             newEmployee.department = isPresent;
-            app_1.logger.info("Creating....");
+            this.logger.info("Creating....");
             return this.employeeRepository.create(newEmployee);
         });
     }
     getAllEmployees() {
         return __awaiter(this, void 0, void 0, function* () {
-            app_1.logger.info("Fetching employees.....");
+            this.logger.info("Fetching employees.....");
             return this.employeeRepository.findMany();
         });
     }
     getEmployeeById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            app_1.logger.info("Fetching employee.....");
+            this.logger.info("Fetching employee.....");
             return this.employeeRepository.findById(id);
         });
     }
     getEmployeeByEmail(email) {
         return __awaiter(this, void 0, void 0, function* () {
-            app_1.logger.info("Fetching employee.....");
+            this.logger.info("Fetching employee.....");
             return this.employeeRepository.findByEmail(email);
         });
     }
@@ -79,7 +80,7 @@ class EmployeeService {
                 existingEmployee.department.id = updateEmployeeDto.departmentId || existingEmployee.department.id;
                 yield this.employeeRepository.update(id, existingEmployee);
             }
-            app_1.logger.info("Updating employee.....");
+            this.logger.info("Updating employee.....");
         });
     }
     deleteEmployee(id) {
@@ -89,16 +90,16 @@ class EmployeeService {
                 yield this.employeeRepository.remove(existingEmployee);
                 // await this.employeeRepository.delete(id);
             }
-            app_1.logger.info("Deleting....");
+            this.logger.info("Deleting....");
         });
     }
     softRemove(id) {
         return __awaiter(this, void 0, void 0, function* () {
             const existingEmployee = yield this.employeeRepository.findById(id);
             if (existingEmployee) {
-                app_1.logger.warn(`Deleting employee $(id)`);
+                this.logger.warn(`Deleting employee $(id)`);
                 yield this.employeeRepository.softremove(existingEmployee);
-                app_1.logger.info("Deleting....");
+                this.logger.info("Deleting....");
             }
         });
     }

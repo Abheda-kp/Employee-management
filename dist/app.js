@@ -20,8 +20,10 @@ const data_source_1 = __importDefault(require("./db/data-source"));
 const employee_route_1 = __importDefault(require("./routes/employee.route"));
 const errorMiddleware_1 = require("./middlewares/errorMiddleware");
 const auth_route_1 = __importDefault(require("./routes/auth.route"));
+const authMiddleware_1 = __importDefault(require("./middlewares/authMiddleware"));
 const logger_service_1 = require("./services/logger.service");
 const department_route_1 = __importDefault(require("./routes/department.route"));
+//authMiddleware
 //import DepartmentRou
 //const {Client}=require('pg');
 const server = (0, express_1.default)();
@@ -29,8 +31,8 @@ exports.logger = logger_service_1.LoggerService.getInstance('app()');
 server.use(express_1.default.json());
 server.use(loggerMiddleware_1.default);
 server.use(processTimeMiddleware_1.processTimeMiddleware);
-server.use("/employees", employee_route_1.default);
-server.use("/department", department_route_1.default);
+server.use("/employees", authMiddleware_1.default, employee_route_1.default);
+server.use("/department", authMiddleware_1.default, department_route_1.default);
 server.use("/auth", auth_route_1.default);
 server.use(errorMiddleware_1.errorMiddleware);
 server.get("/", (req, res) => {

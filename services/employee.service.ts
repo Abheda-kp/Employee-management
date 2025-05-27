@@ -10,49 +10,52 @@ import Department from "../entities/department.entity";
 import { CreateDepartmentDto } from "../dto/department.dto";
 import { DepartmentService } from "./department.service";
 import { HttpException } from "../exception/httpException";
-import { logger } from "../app";
+
 import { error } from "console";
+import { CreateEmployeeDto } from "../dto/employee.dto";
+
 
 export class EmployeeService{
+       private logger = LoggerService.getInstance(EmployeeService.name)
        constructor(private employeeRepository:EmployeeRepository,private departmentService:DepartmentService){}
        
-       async createEmployee(email:string,name:string,age:number,address:CreateAddressDto,password:string,role:EmployeeRole,departmentID:number,status:Status,employeeID:string,dateOfJoining:Date,experience:number):Promise<Employee>{
+       async createEmployee(createEmployeeDto:CreateEmployeeDto):Promise<Employee>{
           const newEmployee=new Employee();
-          newEmployee.name=name;
-          newEmployee.email=email;
-          newEmployee.age=age;
-          newEmployee.address=address as Address;
-          newEmployee.password=await bcrypt.hash(password,10);
-          newEmployee.role=role;
-          newEmployee.dateOfJoining=new Date(dateOfJoining);
-          newEmployee.employeeID=employeeID;
-          newEmployee.status=status;
-          newEmployee.experience=experience;
-          const isPresent=await this.departmentService.getDepartmentById(departmentID);
+          newEmployee.name=createEmployeeDto.name;
+          newEmployee.email=createEmployeeDto.email;
+          newEmployee.age=createEmployeeDto.age;
+          newEmployee.address=createEmployeeDto.address as Address;
+          newEmployee.password=await bcrypt.hash(createEmployeeDto.password,10);
+          newEmployee.role=createEmployeeDto.role;
+          newEmployee.dateOfJoining=new Date(createEmployeeDto.dateOfJoining);
+          newEmployee.employeeID=createEmployeeDto.employeeID;
+          newEmployee.status=createEmployeeDto.status;
+          newEmployee.experience=createEmployeeDto.experience;
+          const isPresent=await this.departmentService.getDepartmentById(createEmployeeDto.departmentId);
           if(!isPresent){       
                         throw new Error('department not found');       
                                 
           }
           newEmployee.department=isPresent;
-         logger.info("Creating....");
+         this.logger.info("Creating....");
           return this.employeeRepository.create(newEmployee);
           
        }
        async getAllEmployees():Promise<Employee[]>{
                  
-                  logger.info("Fetching employees.....");
+                  this.logger.info("Fetching employees.....");
                  return this.employeeRepository.findMany();
 
        }
 
        async getEmployeeById(id:number):Promise<Employee>{
-             logger.info("Fetching employee.....");
+             this.logger.info("Fetching employee.....");
              return this.employeeRepository.findById(id);
        }
 
 
        async getEmployeeByEmail(email:string):Promise<Employee>{
-          logger.info("Fetching employee.....");
+          this.logger.info("Fetching employee.....");
           return this.employeeRepository.findByEmail(email);
 
        }
@@ -75,7 +78,7 @@ export class EmployeeService{
             existingEmployee.department.id=updateEmployeeDto.departmentId  || existingEmployee.department.id;
             await this.employeeRepository.update(id,existingEmployee);
         }
-        logger.info("Updating employee.....");
+        this.logger.info("Updating employee.....");
        }
 
        async deleteEmployee(id:number):Promise<void>{
@@ -84,15 +87,15 @@ export class EmployeeService{
             await this.employeeRepository.remove(existingEmployee);
            // await this.employeeRepository.delete(id);
        }
-       logger.info("Deleting....")
+       this.logger.info("Deleting....")
        }
 
        async softRemove(id:number):Promise<void>{
         const existingEmployee=await this.employeeRepository.findById(id);
         if(existingEmployee){
-            logger.warn(`Deleting employee $(id)`);
+            this.logger.warn(`Deleting employee $(id)`);
             await this.employeeRepository.softremove(existingEmployee);
-        logger.info("Deleting....")
+        this.logger.info("Deleting....")
 
    }}
 }

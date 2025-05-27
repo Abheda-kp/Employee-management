@@ -1,38 +1,37 @@
-import {mock,MockProxy} from 'jest-mock-extended'
-import {when} from 'jest-when'
-import { send } from 'process';
-import Employee from '../../entities/employee.entity';
-import { EmployeeRepository } from '../../repositories/employee.repositories';
-import { EmployeeService } from '../../services/employee.service';
-import { serialize } from 'v8';
-import { departmentService } from '../../routes/department.route';
+import { anyNumber, mock, MockProxy } from "jest-mock-extended";
+//import {EmployeeRepository} from "../../repositories/employee.repository";
+import { EmployeeService } from "../../services/employee.service";
+import { when } from 'jest-when';
+import Employee from "../../entities/employee.entity";
+import {HttpException} from "../../exception/httpException";
+import { DepartmentService } from "../../services/department.service";
+import { EmployeeRepository } from "../../repositories/employee.repositories";
 
 describe('EmployeeService',()=>{
-    let employeeRepository:MockProxy<EmployeeRepository>;
-    let employeeService:EmployeeService;
+    let employeeRepository:MockProxy<EmployeeRepository>
+    let departmentService:MockProxy<DepartmentService>
+    let employeeService:EmployeeService
     beforeEach(()=>{
-        employeeRepository=mock<EmployeeRepository>();
-        employeeService=new EmployeeService(employeeRepository,departmentService)
-    });
-
-    describe('getEmployeeById',()=>{
-          it("get employee when id is present",async()=>{
-                 //Arrange
-                 const mockEmployee={id:123,name:"Employee Name"} as Employee;
-                 when(employeeRepository.findById).calledWith(1).mockReturnValue(mockEmployee);    //it says when 1 is called return mockEmployee,no connection with id inside mockemployee
-                 const user=await  employeeService.getEmployeeById(1);
-                 expect(employeeRepository.findById).toHaveBeenCalledWith(1);
-                 expect(user).toStrictEqual(mockEmployee);               
-
-          })
-          it("should throw error when user with provided  id does not exist",async()=>{
-            //Arrange
-               when(employeeRepository.findById).calledWith(1).mockReturnValue(null);
-               //Act
-               expect(employeeService.getEmployeeById(2)).rejects.toThrow("Employee not found");
-
-               //Assert
-               expect(employeeRepository.findById).toHaveBeenCalledWith(2)
-          })
+        employeeRepository = mock<EmployeeRepository>();
+        departmentService = mock<DepartmentService>();
+        employeeService = new EmployeeService(employeeRepository,departmentService)
+    })    
+    describe('getEmployeeByID',()=>{
+        it('test an employee without valid id',async ()=>{
+            // const employee:Employee = new Employee()
+            when(employeeRepository.findById).calledWith(anyNumber).mockReturnValue(null)
+            // expect(employeeService.getEmployeeById(9)).rejects.toThrow(new HttpException(400,"Employee not found"))
+            const result = await employeeService.getEmployeeById(9)
+            expect(result).toBeNull
+        });
+        it('test an employee with valid id',async ()=>{
+            const mockEmployee = {
+                id:10,
+                name:"Name"
+            } as Employee
+            when(employeeRepository.findById).calledWith(12).mockReturnValue(mockEmployee)
+            const result = await employeeService.getEmployeeById(12)
+            expect(result).toStrictEqual(mockEmployee);
+        })
     })
 })

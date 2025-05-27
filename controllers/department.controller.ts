@@ -1,5 +1,5 @@
 import { DepartmentService } from "../services/department.service";
-import Department from "../entities/employee.entity";
+import Department, { EmployeeRole } from "../entities/employee.entity";
 import { Request, Response, Router, NextFunction } from "express";
 import { DepartmentRepository } from "../repositories/department.repositories";
 import { errorMiddleware } from "../middlewares/errorMiddleware";
@@ -9,13 +9,14 @@ import { CreateDepartmentDto } from "../dto/department.dto";
 import { UpdateDepartmentDto } from "../dto/updateDept.dto";
 import { validate } from "class-validator";
 import { logger } from "../app";
+import { authorizationMiddleware } from "../middlewares/authorization.middleware";
 export class DepartmentController {
   constructor(private departmentService: DepartmentService, router: Router) {
-    router.post("/", this.createDepartment.bind(this));
+    router.post("/", authorizationMiddleware([EmployeeRole.HR,EmployeeRole.DEVELOPER]),this.createDepartment.bind(this));
     router.get("/", this.getAllDepartment.bind(this));
     router.get("/:id", this.getDepartmentById.bind(this));
-    router.put("/:id", this.updateById); //arrow function
-    router.delete("/:id", this.deleteById.bind(this)); //can use arrow function also
+    router.put("/:id", authorizationMiddleware([EmployeeRole.HR,EmployeeRole.DEVELOPER]),this.updateById); //arrow function
+    router.delete("/:id", authorizationMiddleware([EmployeeRole.HR,EmployeeRole.DEVELOPER]),this.deleteById.bind(this)); //can use arrow function also
     router.get("/:id/emp", this.getEmployeeByDepartmentId.bind(this));
   }
 

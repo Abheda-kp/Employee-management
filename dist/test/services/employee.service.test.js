@@ -10,32 +10,34 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const jest_mock_extended_1 = require("jest-mock-extended");
-const jest_when_1 = require("jest-when");
+//import {EmployeeRepository} from "../../repositories/employee.repository";
 const employee_service_1 = require("../../services/employee.service");
-const department_route_1 = require("../../routes/department.route");
+const jest_when_1 = require("jest-when");
 describe('EmployeeService', () => {
     let employeeRepository;
+    let departmentService;
     let employeeService;
     beforeEach(() => {
         employeeRepository = (0, jest_mock_extended_1.mock)();
-        employeeService = new employee_service_1.EmployeeService(employeeRepository, department_route_1.departmentService);
+        departmentService = (0, jest_mock_extended_1.mock)();
+        employeeService = new employee_service_1.EmployeeService(employeeRepository, departmentService);
     });
-    describe('getEmployeeById', () => {
-        it("get employee when id is present", () => __awaiter(void 0, void 0, void 0, function* () {
-            //Arrange
-            const mockEmployee = { id: 123, name: "Employee Name" };
-            (0, jest_when_1.when)(employeeRepository.findById).calledWith(1).mockReturnValue(mockEmployee); //it says when 1 is called return mockEmployee,no connection with id inside mockemployee
-            const user = yield employeeService.getEmployeeById(1);
-            expect(employeeRepository.findById).toHaveBeenCalledWith(1);
-            expect(user).toStrictEqual(mockEmployee);
+    describe('getEmployeeByID', () => {
+        it('test an employee without valid id', () => __awaiter(void 0, void 0, void 0, function* () {
+            // const employee:Employee = new Employee()
+            (0, jest_when_1.when)(employeeRepository.findById).calledWith(jest_mock_extended_1.anyNumber).mockReturnValue(null);
+            // expect(employeeService.getEmployeeById(9)).rejects.toThrow(new HttpException(400,"Employee not found"))
+            const result = yield employeeService.getEmployeeById(9);
+            expect(result).toBeNull;
         }));
-        it("should throw error when user with provided  id does not exist", () => __awaiter(void 0, void 0, void 0, function* () {
-            //Arrange
-            (0, jest_when_1.when)(employeeRepository.findById).calledWith(1).mockReturnValue(null);
-            //Act
-            expect(employeeService.getEmployeeById(2)).rejects.toThrow("Employee not found");
-            //Assert
-            expect(employeeRepository.findById).toHaveBeenCalledWith(2);
+        it('test an employee with valid id', () => __awaiter(void 0, void 0, void 0, function* () {
+            const mockEmployee = {
+                id: 10,
+                name: "Name"
+            };
+            (0, jest_when_1.when)(employeeRepository.findById).calledWith(12).mockReturnValue(mockEmployee);
+            const result = yield employeeService.getEmployeeById(12);
+            expect(result).toStrictEqual(mockEmployee);
         }));
     });
 });

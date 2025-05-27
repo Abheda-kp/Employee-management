@@ -10,12 +10,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DepartmentController = void 0;
+const employee_entity_1 = require("../entities/employee.entity");
 const httpException_1 = require("../exception/httpException");
 const class_transformer_1 = require("class-transformer");
 const department_dto_1 = require("../dto/department.dto");
 const updateDept_dto_1 = require("../dto/updateDept.dto");
 const class_validator_1 = require("class-validator");
 const app_1 = require("../app");
+const authorization_middleware_1 = require("../middlewares/authorization.middleware");
 class DepartmentController {
     constructor(departmentService, router) {
         this.departmentService = departmentService;
@@ -30,11 +32,11 @@ class DepartmentController {
             yield this.departmentService.updateDepartment(id, updateDepartmentDto);
             res.status(200).send("Updated");
         });
-        router.post("/", this.createDepartment.bind(this));
+        router.post("/", (0, authorization_middleware_1.authorizationMiddleware)([employee_entity_1.EmployeeRole.HR, employee_entity_1.EmployeeRole.DEVELOPER]), this.createDepartment.bind(this));
         router.get("/", this.getAllDepartment.bind(this));
         router.get("/:id", this.getDepartmentById.bind(this));
-        router.put("/:id", this.updateById); //arrow function
-        router.delete("/:id", this.deleteById.bind(this)); //can use arrow function also
+        router.put("/:id", (0, authorization_middleware_1.authorizationMiddleware)([employee_entity_1.EmployeeRole.HR, employee_entity_1.EmployeeRole.DEVELOPER]), this.updateById); //arrow function
+        router.delete("/:id", (0, authorization_middleware_1.authorizationMiddleware)([employee_entity_1.EmployeeRole.HR, employee_entity_1.EmployeeRole.DEVELOPER]), this.deleteById.bind(this)); //can use arrow function also
         router.get("/:id/emp", this.getEmployeeByDepartmentId.bind(this));
     }
     createDepartment(req, res, next) {

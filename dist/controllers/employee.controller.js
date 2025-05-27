@@ -10,11 +10,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EmployeeController = void 0;
+const employee_entity_1 = require("../entities/employee.entity");
 const httpException_1 = require("../exception/httpException");
 const class_transformer_1 = require("class-transformer");
 const employee_dto_1 = require("../dto/employee.dto");
 const update_dto_1 = require("../dto/update.dto");
 const class_validator_1 = require("class-validator");
+const authorization_middleware_1 = require("../middlewares/authorization.middleware");
 const app_1 = require("../app");
 class EmployeeController {
     constructor(employeeService, router) {
@@ -37,11 +39,11 @@ class EmployeeController {
                 next(error);
             }
         });
-        router.post("/", this.createEmployee.bind(this));
+        router.post("/", (0, authorization_middleware_1.authorizationMiddleware)([employee_entity_1.EmployeeRole.HR, employee_entity_1.EmployeeRole.DEVELOPER]), this.createEmployee.bind(this));
         router.get("/", this.getAllEmployee.bind(this));
         router.get("/:id", this.getEmployeeById.bind(this));
-        router.put("/:id", this.updateById); //arrow function
-        router.delete("/:id", this.deleteById.bind(this)); //can use arrow function also
+        router.put("/:id", (0, authorization_middleware_1.authorizationMiddleware)([employee_entity_1.EmployeeRole.HR, employee_entity_1.EmployeeRole.DEVELOPER]), this.updateById); //arrow function
+        router.delete("/:id", (0, authorization_middleware_1.authorizationMiddleware)([employee_entity_1.EmployeeRole.HR, employee_entity_1.EmployeeRole.DEVELOPER]), this.deleteById.bind(this)); //can use arrow function also
     }
     createEmployee(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -52,7 +54,7 @@ class EmployeeController {
                     console.log(JSON.stringify(errors));
                     throw new httpException_1.HttpException(400, JSON.stringify(errors));
                 }
-                const savedEmployee = yield this.employeeService.createEmployee(createEmployeeDto.email, createEmployeeDto.name, createEmployeeDto.age, createEmployeeDto.address, createEmployeeDto.password, createEmployeeDto.role, createEmployeeDto.departmentId, createEmployeeDto.status, createEmployeeDto.employeeID, createEmployeeDto.dateOfJoining, createEmployeeDto.experience);
+                const savedEmployee = yield this.employeeService.createEmployee(createEmployeeDto);
                 app_1.logger.info("Employee created");
                 res.status(201).send(savedEmployee);
             }
@@ -75,7 +77,7 @@ class EmployeeController {
                 const id = Number(req.params.id);
                 const employee = yield this.employeeService.getEmployeeById(id);
                 if (!employee) {
-                    throw new httpException_1.HttpException(404, 'employee not found');
+                    throw new httpException_1.HttpException(404, "employee not found");
                 }
                 app_1.logger.info("Fetched employee");
                 res.status(200).send(employee);
