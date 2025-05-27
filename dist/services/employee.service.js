@@ -16,6 +16,7 @@ exports.EmployeeService = void 0;
 const employee_entity_1 = __importDefault(require("../entities/employee.entity"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const logger_service_1 = require("./logger.service");
+const httpException_1 = require("../exception/httpException");
 class EmployeeService {
     constructor(employeeRepository, departmentService) {
         this.employeeRepository = employeeRepository;
@@ -79,6 +80,9 @@ class EmployeeService {
                 existingEmployee.address.pincode = updateEmployeeDto.address.pincode || existingEmployee.address.pincode;
                 existingEmployee.department.id = updateEmployeeDto.departmentId || existingEmployee.department.id;
                 yield this.employeeRepository.update(id, existingEmployee);
+            }
+            else {
+                new httpException_1.HttpException(404, "Employee not found");
             }
             this.logger.info("Updating employee.....");
         });

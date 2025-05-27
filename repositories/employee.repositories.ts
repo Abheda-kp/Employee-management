@@ -29,8 +29,8 @@ export class EmployeeRepository{
     async findByEmail(email:string):Promise<Employee | null>{
         return this.repository.findOneBy({email})
     }
-    async update(id:number,employee:Employee):Promise<void>{
-        await this.repository.save({id, ...employee})  //await this.repository.save({id,name:employee.name,email:employee.email})
+    async update(id:number,employee:Employee):Promise<Employee>{
+        return await this.repository.save({id, ...employee})  //await this.repository.save({id,name:employee.name,email:employee.email})
     }
 
     async delete(id:number):Promise<void>{

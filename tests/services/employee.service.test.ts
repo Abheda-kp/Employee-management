@@ -43,8 +43,8 @@ describe("EmployeeService", () => {
     });
   });
 
-   describe('getAllEmployees', () => {
-    it('should return employee list', async () => {
+  describe("getAllEmployees", () => {
+    it("should return employee list", async () => {
       const mockList = [{ id: 1 }, { id: 2 }] as Employee[];
       when(employeeRepository.findMany).mockResolvedValue(mockList);
 
@@ -52,13 +52,50 @@ describe("EmployeeService", () => {
       expect(result).toHaveLength(2);
       expect(result).toEqual(mockList);
     });
-    it('should not return employee list',async()=>{
-        when(employeeRepository.findMany).mockResolvedValue(null);
-        const result=await employeeService.getAllEmployees();
-        expect(result).toBeNull;
-    })
+    it("should not return employee list", async () => {
+      when(employeeRepository.findMany).mockResolvedValue(null);
+      const result = await employeeService.getAllEmployees();
+      expect(result).toBeNull;
+    });
   });
 
+  describe("updateEmployeeById", () => {
+    it("test for updating employee", async () => {
+      const mockUpdateEmployeeDto = {
+        name: "New Name",
+      } as UpdateEmployeeDto;
+      const mockEmployeeBeforeUpdate = {
+        id: 10,
+        name: "Name",
+      } as Employee;
+      const mockEmployeeAfterUpdate = {
+        id: 10,
+        name: "New Name",
+      } as Employee;
+      when(employeeRepository.findById)
+        .calledWith(10)
+        .mockReturnValue(mockEmployeeBeforeUpdate);
+      when(employeeRepository.update)
+        .calledWith(10, mockEmployeeAfterUpdate)
+        .mockReturnValue(mockEmployeeAfterUpdate);
+      const result = await employeeService.updateEmployee(
+        10,
+        mockUpdateEmployeeDto
+      );
+      console.log(result);
+      expect(result).toStrictEqual(mockEmployeeAfterUpdate);
+    });
+    it("test for wrong emp id", async () => {
+      const mockUpdateEmployeeDto = {
+        name: "New Name",
+      } as UpdateEmployeeDto;
+      const mockError = new HttpException(404, "Employee not found");
+      when(employeeRepository.findById)
+        .calledWith(anyNumber)
+        .mockReturnValue(null);
+      expect(employeeService.updateEmployee(10, mockUpdateEmployeeDto));
+    });
+  });
 
   describe("deleteEmployee", () => {
     it("should call remove if employee exists", async () => {
